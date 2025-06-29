@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Prunk Services API
+  description: Serverless API for Prunk Services
+  version: 1.0.0
+  contact:
+    name: Prunk Services Team
+    email: support@prunk.com
+  license:
+    name: ISC
+    url: https://opensource.org/licenses/ISC
+
+servers:
+  - url: https://{apiId}.execute-api.ap-northeast-1.amazonaws.com/{stage}
+    description: Production server
+    variables:
+      apiId:
+        description: API Gateway ID
+        default: your-api-gateway-id
+      stage:
+        description: Deployment stage
+        default: dev
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /hello:
+    get:
+      summary: Hello World endpoint
+      description: Returns a simple hello world message
+      operationId: getHello
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Hello from Prunk Services!"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-01-15T10:30:00Z"
+                  stage:
+                    type: string
+                    example: "dev"
+                required:
+                  - message
+                  - timestamp
+                  - stage
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:{accountId}:function:prunk-services-{stage}-hello/invocations
+        credentials: arn:aws:iam::{accountId}:role/apigateway-lambda-role
+        requestTemplates:
+          application/json: |
+            {
+              "body": $input.json('$'),
+              "headers": {
+                #foreach($header in $input.params().header.keySet())
+                "$header": "$util.escapeJavaScript($input.params().header.get($header))" #if($foreach.hasNext),#end
+                #end
+              },
+              "method": "$context.httpMethod",
+              "path": "$context.path",
+              "queryParams": {
+                #foreach($param in $input.params().querystring.keySet())
+                "$param": "$util.escapeJavaScript($input.params().querystring.get($param))" #if($foreach.hasNext),#end
+                #end
+              },
+              "pathParams": {
+                #foreach($param in $input.params().path.keySet())
+                "$param": "$util.escapeJavaScript($input.params().path.get($param))" #if($foreach.hasNext),#end
+                #end
+              },
+              "stageVariables": {
+                #foreach($variable in $context.stageVariables.keySet())
+                "$variable": "$util.escapeJavaScript($context.stageVariables.get($variable))" #if($foreach.hasNext),#end
+                #end
+              },
+              "requestContext": {
+                "accountId": "$context.accountId",
+                "apiId": "$context.apiId",
+                "httpMethod": "$context.httpMethod",
+                "identity": {
+                  "accessKey": "$context.identity.accessKey",
+                  "accountId": "$context.identity.accountId",
+                  "apiKey": "$context.identity.apiKey",
+                  "caller": "$context.identity.caller",
+                  "cognitoAuthenticationProvider": "$context.identity.cognitoAuthenticationProvider",
+                  "cognitoAuthenticationType": "$context.identity.cognitoAuthenticationType",
+                  "cognitoIdentityId": "$context.identity.cognitoIdentityId",
+                  "cognitoIdentityPoolId": "$context.identity.cognitoIdentityPoolId",
+                  "sourceIp": "$context.identity.sourceIp",
+                  "user": "$context.identity.user",
+                  "userAgent": "$context.identity.userAgent",
+                  "userArn": "$context.identity.userArn"
+                },
+                "path": "$context.path",
+                "protocol": "$context.protocol",
+                "requestId": "$context.requestId",
+                "requestTime": "$context.requestTime",
+                "requestTimeEpoch": "$context.requestTimeEpoch",
+                "resourceId": "$context.resourceId",
+                "resourcePath": "$context.resourcePath",
+                "stage": "$context.stage"
+              }
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: $input.json('$.body')
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Internal server error"
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 500
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+          example: "2024-01-15T10:30:00Z"
+      required:
+        - error
+        - statusCode
+        - timestamp
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key for authentication
+
+tags:
+  - name: Health
+    description: Health check and status endpoints
+  - name: Auth
+    description: Authentication and authorization endpoints
+  - name: Users
+    description: User management endpoints
+
+externalDocs:
+  description: Find more info about Prunk Services
+  url: https://github.com/your-org/prunk
