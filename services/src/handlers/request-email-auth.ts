@@ -1,12 +1,46 @@
-import { SendEmailCommand } from "@aws-sdk/client-ses";
-import { EmailSigninContext } from "../contexts";
+import { z } from "zod";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-export async function sendEmailAuth(email: string, token: string, context: EmailSigninContext) {
-  const { sesClient, EMAIL_AUTH_SENDER, SERVICE_DOMAIN, EMAIL_AUTH_PATH } = context;
+import { handleErrorResponse, serializeResponse } from "@/libs";
+import { logDebug, logError } from "@/libs/log";
+import { sendEmail } from "@/libs/ses";
+import { generateEmailAuthToken } from "@/controllers/auth";
+import { DynamoDBDocumentContext, ISESContext } from "@/contexts";
+import { SESClient } from "@aws-sdk/client-ses";
 
-  const link = `https://${SERVICE_DOMAIN}${EMAIL_AUTH_PATH}?token=${token}`;
+export class RequestEmailAuthContext extends DynamoDBDocumentContext implements ISESContext {
+  sesClient: SESClient;
+  EMAIL_AUTH_DEBOUNCE_TIME: number;
+  EMAIL_AUTH_SENDER: string;
+  EMAIL_AUTH_PATH: string;
 
-  const htmlBody = `
+  constructor(action: string, environment: any) {
+    if (!environment.EMAIL_AUTH_SENDER) {
+      throw new Error("EMAIL_AUTH_SENDER is required");
+    }
+    if (!environment.EMAIL_AUTH_PATH) {
+      throw new Error("EMAIL_AUTH_PATH is required");
+    }
+
+    super(action, environment);
+
+    this.sesClient = new SESClient({ region: this.REGION });
+    this.EMAIL_AUTH_DEBOUNCE_TIME = parseInt(environment.EMAIL_AUTH_DEBOUNCE_TIME) || 1000 * 60 * 3; // 3 minutes
+    this.EMAIL_AUTH_SENDER = environment.EMAIL_AUTH_SENDER;
+    this.EMAIL_AUTH_PATH = environment.EMAIL_AUTH_PATH;
+  }
+
+  override destroy(): void {
+    this.sesClient.destroy();
+    super.destroy();
+  }
+}
+
+const bodySchema = z.object({
+  email: z.string().email().min(1),
+});
+
+const htmlBody = (link: string, email: string) => `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -122,23 +156,31 @@ export async function sendEmailAuth(email: string, token: string, context: Email
     </html>
   `;
 
-  const command = new SendEmailCommand({
-    Source: EMAIL_AUTH_SENDER,
-    Destination: {
-      ToAddresses: [email],
-    },
-    Message: {
-      Subject: {
-        Data: "Sign in to Prunk",
-      },
-      Body: {
-        Html: {
-          Data: htmlBody,
-        },
-      },
-    },
-  });
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const context = new RequestEmailAuthContext("request-email-auth", process.env);
+  const { EMAIL_AUTH_SENDER, SERVICE_DOMAIN, EMAIL_AUTH_PATH, EMAIL_AUTH_DEBOUNCE_TIME } = context;
+  try {
+    // parse body
+    const body = JSON.parse(event.body || '{}');
+    const { email } = bodySchema.parse(body);
 
-  const result = await sesClient.send(command);
-  return result;
-}
+    logDebug("generating email auth token", { email }, context);
+    const token = await generateEmailAuthToken(email, EMAIL_AUTH_DEBOUNCE_TIME, context);
+
+    // send email
+    const source = EMAIL_AUTH_SENDER
+    const link = `https://${SERVICE_DOMAIN}${EMAIL_AUTH_PATH}?token=${token}&email=${encodeURIComponent(email)}`;
+    const htmlBodyContent = htmlBody(link, email);
+    const subject = "Sign in to Prunk";
+    const emailSendResult = await sendEmail(source, email, subject, htmlBodyContent, context);
+    logDebug("sent email", emailSendResult, context);
+
+    // return
+    return serializeResponse({ status: "success" }, 201);
+  } catch (error) {
+    logError("request-email-auth error", error, context);
+    return handleErrorResponse(error);
+  } finally {
+    context.destroy();
+  }
+};
