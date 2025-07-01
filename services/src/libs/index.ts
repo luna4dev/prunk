@@ -1,2 +1,2 @@
-export * from "./api-gateway";
-export * from "./error";
+export * from './api-gateway';
+export * from './error';

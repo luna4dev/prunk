@@ -21,15 +21,15 @@ export class PrunkBaseContext implements IPrunkBaseContext {
 
   constructor(action: string, environment: any) {
     if (!environment.REGION) {
-      throw new Error("REGION is required");
+      throw new Error('REGION is required');
     }
     if (!environment.SERVICE_DOMAIN) {
-      throw new Error("SERVICE_DOMAIN is required");
+      throw new Error('SERVICE_DOMAIN is required');
     }
 
     this.action = action;
     this.REGION = environment.REGION;
-    this.LOG_LEVEL = environment.LOG_LEVEL || "info";
+    this.LOG_LEVEL = environment.LOG_LEVEL || 'info';
     this.SERVICE_DOMAIN = environment.SERVICE_DOMAIN;
     this.callStack = [];
   }

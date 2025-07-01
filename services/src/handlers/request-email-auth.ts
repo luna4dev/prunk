@@ -1,14 +1,17 @@
-import { z } from "zod";
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { z } from 'zod';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-import { handleErrorResponse, serializeResponse } from "@/libs";
-import { logDebug, logError } from "@/libs/log";
-import { sendEmail } from "@/libs/ses";
-import { generateEmailAuthToken } from "@/controllers/auth";
-import { DynamoDBDocumentContext, ISESContext } from "@/contexts";
-import { SESClient } from "@aws-sdk/client-ses";
+import { handleErrorResponse, serializeResponse } from '@/libs';
+import { logDebug, logError } from '@/libs/log';
+import { sendEmail } from '@/libs/ses';
+import { generateEmailAuthToken } from '@/controllers/auth';
+import { DynamoDBDocumentContext, ISESContext } from '@/contexts';
+import { SESClient } from '@aws-sdk/client-ses';
 
-export class RequestEmailAuthContext extends DynamoDBDocumentContext implements ISESContext {
+export class RequestEmailAuthContext
+  extends DynamoDBDocumentContext
+  implements ISESContext
+{
   sesClient: SESClient;
   EMAIL_AUTH_DEBOUNCE_TIME: number;
   EMAIL_AUTH_SENDER: string;
@@ -16,16 +19,17 @@ export class RequestEmailAuthContext extends DynamoDBDocumentContext implements 
 
   constructor(action: string, environment: any) {
     if (!environment.EMAIL_AUTH_SENDER) {
-      throw new Error("EMAIL_AUTH_SENDER is required");
+      throw new Error('EMAIL_AUTH_SENDER is required');
     }
     if (!environment.EMAIL_AUTH_PATH) {
-      throw new Error("EMAIL_AUTH_PATH is required");
+      throw new Error('EMAIL_AUTH_PATH is required');
     }
 
     super(action, environment);
 
     this.sesClient = new SESClient({ region: this.REGION });
-    this.EMAIL_AUTH_DEBOUNCE_TIME = parseInt(environment.EMAIL_AUTH_DEBOUNCE_TIME) || 1000 * 60 * 3; // 3 minutes
+    this.EMAIL_AUTH_DEBOUNCE_TIME =
+      parseInt(environment.EMAIL_AUTH_DEBOUNCE_TIME) || 1000 * 60 * 3; // 3 minutes
     this.EMAIL_AUTH_SENDER = environment.EMAIL_AUTH_SENDER;
     this.EMAIL_AUTH_PATH = environment.EMAIL_AUTH_PATH;
   }
@@ -156,29 +160,49 @@ const htmlBody = (link: string, email: string) => `
     </html>
   `;
 
-export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const context = new RequestEmailAuthContext("request-email-auth", process.env);
-  const { EMAIL_AUTH_SENDER, SERVICE_DOMAIN, EMAIL_AUTH_PATH, EMAIL_AUTH_DEBOUNCE_TIME } = context;
+export const handler = async (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  const context = new RequestEmailAuthContext(
+    'request-email-auth',
+    process.env
+  );
+  const {
+    EMAIL_AUTH_SENDER,
+    SERVICE_DOMAIN,
+    EMAIL_AUTH_PATH,
+    EMAIL_AUTH_DEBOUNCE_TIME,
+  } = context;
   try {
     // parse body
     const body = JSON.parse(event.body || '{}');
     const { email } = bodySchema.parse(body);
 
-    logDebug("generating email auth token", { email }, context);
-    const token = await generateEmailAuthToken(email, EMAIL_AUTH_DEBOUNCE_TIME, context);
+    logDebug('generating email auth token', { email }, context);
+    const token = await generateEmailAuthToken(
+      email,
+      EMAIL_AUTH_DEBOUNCE_TIME,
+      context
+    );
 
     // send email
-    const source = EMAIL_AUTH_SENDER
+    const source = EMAIL_AUTH_SENDER;
     const link = `https://${SERVICE_DOMAIN}${EMAIL_AUTH_PATH}?token=${token}&email=${encodeURIComponent(email)}`;
     const htmlBodyContent = htmlBody(link, email);
-    const subject = "Sign in to Prunk";
-    const emailSendResult = await sendEmail(source, email, subject, htmlBodyContent, context);
-    logDebug("sent email", emailSendResult, context);
+    const subject = 'Sign in to Prunk';
+    const emailSendResult = await sendEmail(
+      source,
+      email,
+      subject,
+      htmlBodyContent,
+      context
+    );
+    logDebug('sent email', emailSendResult, context);
 
     // return
-    return serializeResponse({ status: "success" }, 201);
+    return serializeResponse({ status: 'success' }, 201);
   } catch (error) {
-    logError("request-email-auth error", error, context);
+    logError('request-email-auth error', error, context);
     return handleErrorResponse(error);
   } finally {
     context.destroy();

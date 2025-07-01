@@ -41,14 +41,14 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Hello from Prunk Services!"
+                    example: 'Hello from Prunk Services!'
                   timestamp:
                     type: string
                     format: date-time
-                    example: "2024-01-15T10:30:00Z"
+                    example: '2024-01-15T10:30:00Z'
                   stage:
                     type: string
-                    example: "dev"
+                    example: 'dev'
                 required:
                   - message
                   - timestamp
@@ -120,7 +120,7 @@ paths:
             }
         responses:
           default:
-            statusCode: "200"
+            statusCode: '200'
             responseTemplates:
               application/json: $input.json('$.body')
 
@@ -132,7 +132,7 @@ components:
         error:
           type: string
           description: Error message
-          example: "Internal server error"
+          example: 'Internal server error'
         statusCode:
           type: integer
           description: HTTP status code
@@ -141,7 +141,7 @@ components:
           type: string
           format: date-time
           description: Error timestamp
-          example: "2024-01-15T10:30:00Z"
+          example: '2024-01-15T10:30:00Z'
       required:
         - error
         - statusCode

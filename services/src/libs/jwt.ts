@@ -33,29 +33,30 @@ export function createJWT<T extends JWTPayload>(
 ): string {
   context.startCallStack('createJWT');
   try {
-    const {
-      JWT_SECRET,
-      JWT_ISSUER,
-      JWT_AUDIENCE,
-    } = context;
+    const { JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE } = context;
 
     if (!JWT_SECRET) {
       throw new PrunkError('JWT_SECRET is required', 500);
     }
 
     const jwtOptions: jwt.SignOptions = {
-      expiresIn: (options.expiresIn || '1h'),
+      expiresIn: options.expiresIn || '1h',
     };
 
     // Add optional properties only if they exist
-    if (options.issuer || JWT_ISSUER) jwtOptions.issuer = options.issuer || JWT_ISSUER;
-    if (options.audience || JWT_AUDIENCE) jwtOptions.audience = options.audience || JWT_AUDIENCE;
+    if (options.issuer || JWT_ISSUER)
+      jwtOptions.issuer = options.issuer || JWT_ISSUER;
+    if (options.audience || JWT_AUDIENCE)
+      jwtOptions.audience = options.audience || JWT_AUDIENCE;
     if (options.subject) jwtOptions.subject = options.subject;
 
     // Add any additional options that are compatible with jwt.SignOptions
     if (options['algorithm']) jwtOptions.algorithm = options['algorithm'];
     if (options['keyid']) jwtOptions.keyid = options['keyid'];
-    if (options['notBefore']) jwtOptions.notBefore = options['notBefore'] as jwt.SignOptions['notBefore'];
+    if (options['notBefore'])
+      jwtOptions.notBefore = options[
+        'notBefore'
+      ] as jwt.SignOptions['notBefore'];
     if (options['jwtid']) jwtOptions.jwtid = options['jwtid'];
 
     const token = jwt.sign(payload, JWT_SECRET, jwtOptions);
@@ -93,7 +94,7 @@ export function refreshJWT<T extends JWTPayload>(
 
     // Decode the token without verification to get the payload
     const decoded = jwt.decode(token) as T;
-    
+
     if (!decoded) {
       throw new PrunkError('Invalid JWT token', 400);
     }
@@ -128,11 +129,7 @@ export function validateJWT<T extends JWTPayload>(
 ): T {
   context.startCallStack('validateJWT');
   try {
-    const {
-      JWT_SECRET,
-      JWT_ISSUER,
-      JWT_AUDIENCE,
-    } = context;
+    const { JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE } = context;
 
     if (!JWT_SECRET) {
       throw new PrunkError('JWT_SECRET is required', 500);
@@ -150,17 +147,17 @@ export function validateJWT<T extends JWTPayload>(
     if (error instanceof PrunkError) {
       throw error;
     }
-    
+
     if (error instanceof jwt.JsonWebTokenError) {
       logError('JWT validation error', error, context);
       throw new PrunkError('Invalid JWT token', 401);
     }
-    
+
     if (error instanceof jwt.TokenExpiredError) {
       logError('JWT expired', error, context);
       throw new PrunkError('JWT token has expired', 401);
     }
-    
+
     if (error instanceof jwt.NotBeforeError) {
       logError('JWT not before error', error, context);
       throw new PrunkError('JWT token not yet valid', 401);
