@@ -3,6 +3,7 @@ import { PrunkError } from '@/libs/error';
 import { logDebug, logError, logWarn } from '@/libs/log';
 import { projectModelSchema } from '@/models/projects';
 import { GetCommand, PutCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Get all projects for a user.
@@ -106,7 +107,6 @@ export async function getProject(
  */
 export async function createProject(
   projectData: {
-    projectId: string;
     name: string;
     description: string;
     status?: 'ACTIVE' | 'SUSPENDED';
@@ -118,8 +118,10 @@ export async function createProject(
   logDebug('start createProject', projectData, context);
   const { dynamoDBDocumentClient } = context;
   try {
+    const projectId = uuid();
     const now = Date.now();
     const project = {
+      projectId,
       ...projectData,
       status: projectData.status || 'ACTIVE',
       preferences: projectData.preferences || {},

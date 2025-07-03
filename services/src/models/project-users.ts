@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const projectUserPermissionSchema = z.enum(['FULL_ACCESS']);
+export type ProjectUserPermission = z.infer<typeof projectUserPermissionSchema>;
 
 export const projectUserModelSchema = z.object({
   projectId: z

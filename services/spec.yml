@@ -59,6 +59,168 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /project:
+    get:
+      summary: Get user's projects
+      description: Retrieve all projects that the authenticated user has access to
+      operationId: getProjects
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page_size
+          in: query
+          description: Number of projects to return (1-100)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: last_evaluated_key
+          in: query
+          description: Pagination token for getting the next page of results
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  lastEvaluatedKey:
+                    type: string
+                    nullable: true
+                    description: Pagination token for the next page
+                required:
+                  - records
+                  - lastEvaluatedKey
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Create a new project
+      description: Create a new project and assign the authenticated user as the owner
+      operationId: createProject
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  description: The name of the project
+                  example: 'My New Project'
+                description:
+                  type: string
+                  description: The description of the project
+                  example: 'A description of my new project'
+                status:
+                  type: string
+                  enum: ['ACTIVE', 'SUSPENDED']
+                  default: 'ACTIVE'
+                  description: The status of the project
+                preferences:
+                  type: object
+                  description: The preferences of the project
+                  example: {}
+              required:
+                - name
+                - description
+      responses:
+        '200':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Bad request - invalid project data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /project/{project_id}:
+    get:
+      summary: Get project details
+      description: Retrieve details of a specific project that the authenticated user has access to
+      operationId: getProject
+      tags:
+        - Projects
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          description: The ID of the project to get
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -147,12 +309,58 @@ components:
         - statusCode
         - timestamp
 
+    Project:
+      type: object
+      properties:
+        projectId:
+          type: string
+          description: The unique identifier of the project
+          example: 'proj_1234567890'
+        name:
+          type: string
+          description: The name of the project
+          example: 'My Project'
+        description:
+          type: string
+          description: The description of the project
+          example: 'A description of my project'
+        status:
+          type: string
+          enum: ['ACTIVE', 'SUSPENDED']
+          description: The status of the project
+          example: 'ACTIVE'
+        preferences:
+          type: object
+          description: The preferences of the project
+          example: {}
+        createdAt:
+          type: integer
+          description: The timestamp (milliseconds) of when the project was created
+          example: 1705312800000
+        updatedAt:
+          type: integer
+          description: The timestamp (milliseconds) of when the project was last updated
+          example: 1705312800000
+      required:
+        - projectId
+        - name
+        - description
+        - status
+        - preferences
+        - createdAt
+        - updatedAt
+
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
       name: x-api-key
       description: API key for authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
 
 tags:
   - name: Health
@@ -161,6 +369,8 @@ tags:
     description: Authentication and authorization endpoints
   - name: Users
     description: User management endpoints
+  - name: Projects
+    description: Project management endpoints
 
 externalDocs:
   description: Find more info about Prunk Services

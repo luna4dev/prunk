@@ -1,7 +1,7 @@
 import { IDynamoDBDocumentContext } from '@/contexts/dynamo-db-document';
 import { PrunkError } from '@/libs/error';
 import { logDebug, logError, logWarn } from '@/libs/log';
-import { projectUserModelSchema } from '@/models/project-users';
+import { projectUserModelSchema, ProjectUserPermission } from '@/models/project-users';
 import {
   GetCommand,
   QueryCommand,
@@ -190,7 +190,7 @@ export async function createProjectUser(
     projectId: string;
     userId: string;
     isOwner: boolean;
-    permissions: 'FULL_ACCESS'[];
+    permissions: ProjectUserPermission[];
   },
   context: IDynamoDBDocumentContext
 ) {
