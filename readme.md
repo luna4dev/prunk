@@ -27,9 +27,13 @@ Prunk.io is a cloud-based file sharing platform that allows users to store, orga
 - **Build Tool**: esbuild
 
 ### Frontend
-- **Framework**: Next.js 14 with TypeScript
-- **Styling**: Tailwind CSS
-- **Deployment**: Vercel
+- **Framework**: React 19 with Vite and SWC
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: Zustand
+- **Deployment**: Static hosting (Netlify, Vercel, or any static server)
+
+📖 **[Detailed Frontend Documentation →](views/README.md)**
 
 ## 📁 Project Structure
 
@@ -44,9 +48,9 @@ prunk/
 │   │   ├── libs/          # Shared libraries
 │   │   └── models/        # Data models
 │   └── package.json
-├── view/              # Frontend Next.js application
-│   ├── src/
-│   │   └── app/      # Next.js app directory
+├── views/             # Frontend React application
+│   ├── src/           # React source files
+│   ├── public/        # Static assets
 │   └── package.json
 └── readme.md
 ```
@@ -120,29 +124,16 @@ prunk/
 
 ### Frontend Setup
 
-1. **Navigate to the view directory**:
-   ```bash
-   cd view
-   ```
+📖 **[Complete Frontend Setup Guide →](views/README.md)**
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+Quick start:
+```bash
+cd views
+npm install
+npm run dev
+```
 
-3. **Set up environment variables**:
-   Create a `.env.local` file with:
-   ```
-   NEXT_PUBLIC_API_URL=your-api-gateway-url
-   ```
-
-4. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-
-5. **Open your browser**:
-   Navigate to `http://localhost:3000`
+Then navigate to `http://localhost:5173`
 
 ## 🔧 Development
 
@@ -155,10 +146,12 @@ prunk/
 
 ### Frontend Development
 
+📖 **[Complete Frontend Development Guide →](views/README.md)**
+
+Quick commands:
 - **Development server**: `npm run dev`
 - **Build**: `npm run build`
-- **Production preview**: `npm run start`
-- **Lint**: `npm run lint`
+- **Preview**: `npm run preview`
 
 ## 📚 API Documentation
 
@@ -203,11 +196,9 @@ npm run deploy
 
 ### Frontend Deployment
 
-The frontend is deployed on Vercel:
+📖 **[Complete Frontend Deployment Guide →](views/README.md)**
 
-1. Connect your GitHub repository to Vercel
-2. Configure environment variables
-3. Deploy automatically on push to main branch
+The frontend can be deployed to any static hosting service (Netlify, Vercel, GitHub Pages, etc.) after running `npm run build`.
 
 ## 🤝 Contributing
 
@@ -225,7 +216,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with Next.js and AWS Lambda
+- Built with React and AWS Lambda
 - Inspired by Google Drive and Dropbox
 - Icons from [Heroicons](https://heroicons.com/)
 
