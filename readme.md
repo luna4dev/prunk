@@ -19,12 +19,15 @@ Prunk.io is a cloud-based file sharing platform that allows users to store, orga
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Runtime**: Node.js with TypeScript
+- **Runtime**: Node.js 20.x with TypeScript
 - **Framework**: AWS Lambda with API Gateway
 - **Database**: DynamoDB
 - **Authentication**: JWT tokens
 - **Email Service**: AWS SES
 - **Build Tool**: esbuild
+- **Validation**: Zod schema validation
+
+📖 **[Detailed Backend Documentation →](services/README.md)**
 
 ### Frontend
 - **Framework**: React 19 with Vite and SWC
@@ -66,61 +69,20 @@ prunk/
 
 ### Backend Setup
 
-1. **Navigate to the services directory**:
-   ```bash
-   cd services
-   ```
+📖 **[Complete Backend Setup Guide →](services/README.md)**
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+Quick start:
+```bash
+cd services
+npm install
+aws configure
+npm run deploy
+```
 
-3. **Configure AWS credentials**:
-   ```bash
-   aws configure
-   ```
-
-4. **Set up serverless.yml configuration**:
-   
-   The `serverless.yml` file contains sensitive configuration (AWS account details, JWT secrets, etc.) and is gitignored for security reasons. You need to create your own configuration file based on the project structure.
-   
-   Create a `serverless.yml` file in the `services/` directory with the following key configurations:
-   
-   **Required Environment Variables:**
-   - `JWT_SECRET`: A strong secret key for JWT token signing
-   - `SERVICE_DOMAIN`: Your domain name
-   - `EMAIL_AUTH_SENDER`: Your SES verified email address
-   - `JWT_ISSUER` and `JWT_AUDIENCE`: Your domain name
-   - `accountId`: Your AWS account ID
-   
-   **Required AWS Resources:**
-   - DynamoDB tables with names starting with `Prunk`
-   - SES configuration for email sending
-   - IAM roles with DynamoDB and SES permissions
-   
-   **CORS Configuration:**
-   - Update `allowOrigins` to include your frontend domain
-   
-   **Functions:**
-   - Email authentication handlers
-   - Project management handlers
-   - JWT token authorizer
-   
-   Refer to the Serverless Framework documentation for the complete configuration structure.
-
-5. **Set up AWS resources**:
-   
-   Before deploying, you need to set up the required AWS resources:
-   
-   - **DynamoDB Tables**: Create tables with names starting with `Prunk` (e.g., `PrunkProjects`, `PrunkUsers`)
-   - **SES Configuration**: Verify your email domain and set up SES for sending emails
-   - **IAM Permissions**: Ensure your AWS credentials have the necessary permissions
-   
-6. **Deploy the backend**:
-   ```bash
-   npm run deploy
-   ```
+**Required AWS Resources:**
+- DynamoDB tables with names starting with `Prunk`
+- SES configuration for email sending
+- IAM roles with DynamoDB and SES permissions
 
 ### Frontend Setup
 
@@ -139,10 +101,12 @@ Then navigate to `http://localhost:5173`
 
 ### Backend Development
 
-- **Build**: `npm run build`
-- **Test**: `npm test`
-- **Deploy**: `npm run deploy`
+📖 **[Complete Backend Development Guide →](services/README.md)**
+
+Quick commands:
 - **Local development**: `npm run dev`
+- **Deploy**: `npm run deploy`
+- **Format code**: `npm run format`
 
 ### Frontend Development
 
@@ -155,25 +119,15 @@ Quick commands:
 
 ## 📚 API Documentation
 
-### Authentication Endpoints
+📖 **[Complete API Documentation →](services/README.md)**
 
-- `POST /auth/request-email` - Request email authentication
-- `POST /auth/verify-email` - Verify email authentication
-- `POST /auth/login` - User login
+### Key Endpoints
 
-### Project Endpoints
-
-- `GET /projects` - List user projects
-- `POST /projects` - Create new project
-- `GET /projects/{id}` - Get project details
-- `PUT /projects/{id}` - Update project
-- `DELETE /projects/{id}` - Delete project
-
-### User Management
-
-- `GET /users/profile` - Get user profile
-- `PUT /users/profile` - Update user profile
-- `GET /project-users` - Get project users
+- `POST /auth/email` - Request email authentication
+- `GET /auth/email/verify` - Verify email authentication
+- `GET /project` - List user projects
+- `POST /project` - Create new project
+- `GET /project/{project_id}` - Get project details
 
 ## 🔐 Security
 
@@ -187,7 +141,9 @@ Quick commands:
 
 ### Backend Deployment
 
-The backend is deployed using AWS SAM (Serverless Application Model):
+📖 **[Complete Backend Deployment Guide →](services/README.md)**
+
+The backend is deployed using Serverless Framework:
 
 ```bash
 cd services
