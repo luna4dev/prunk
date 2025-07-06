@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: Prunk Services API
   description: Serverless API for Prunk Services
@@ -11,48 +11,108 @@ info:
     url: https://opensource.org/licenses/ISC
 
 servers:
-  - url: https://{apiId}.execute-api.ap-northeast-1.amazonaws.com/{stage}
+  - url: https://prunk.luna4.me/api
     description: Production server
-    variables:
-      apiId:
-        description: API Gateway ID
-        default: your-api-gateway-id
-      stage:
-        description: Deployment stage
-        default: dev
   - url: http://localhost:3000
     description: Local development server
 
 paths:
-  /hello:
-    get:
-      summary: Hello World endpoint
-      description: Returns a simple hello world message
-      operationId: getHello
+  /auth/email:
+    post:
+      summary: Request email authentication
+      description: Send an authentication email to the provided email address
+      operationId: requestEmailAuth
       tags:
-        - Health
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: The email address to send authentication to
+                  example: 'user@example.com'
+              required:
+                - email
       responses:
-        '200':
-          description: Successful response
+        '201':
+          description: Email sent successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  status:
                     type: string
-                    example: 'Hello from Prunk Services!'
-                  timestamp:
+                    example: 'success'
+        '400':
+          description: Bad request - invalid email format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests - email sent recently
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/email/verify:
+    get:
+      summary: Verify email authentication token
+      description: Verify the authentication token sent via email and return a JWT token
+      operationId: verifyEmailAuth
+      tags:
+        - Auth
+      parameters:
+        - name: email
+          in: query
+          description: The email address that was used for authentication
+          required: true
+          schema:
+            type: string
+            format: email
+        - name: token
+          in: query
+          description: The authentication token sent via email
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
                     type: string
-                    format: date-time
-                    example: '2024-01-15T10:30:00Z'
-                  stage:
-                    type: string
-                    example: 'dev'
-                required:
-                  - message
-                  - timestamp
-                  - stage
+                    description: JWT token for authenticated user
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        '400':
+          description: Bad request - malformed email verification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
@@ -99,7 +159,6 @@ paths:
                       $ref: '#/components/schemas/Project'
                   lastEvaluatedKey:
                     type: string
-                    nullable: true
                     description: Pagination token for the next page
                 required:
                   - records
@@ -221,71 +280,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-1:{accountId}:function:prunk-services-{stage}-hello/invocations
-        credentials: arn:aws:iam::{accountId}:role/apigateway-lambda-role
-        requestTemplates:
-          application/json: |
-            {
-              "body": $input.json('$'),
-              "headers": {
-                #foreach($header in $input.params().header.keySet())
-                "$header": "$util.escapeJavaScript($input.params().header.get($header))" #if($foreach.hasNext),#end
-                #end
-              },
-              "method": "$context.httpMethod",
-              "path": "$context.path",
-              "queryParams": {
-                #foreach($param in $input.params().querystring.keySet())
-                "$param": "$util.escapeJavaScript($input.params().querystring.get($param))" #if($foreach.hasNext),#end
-                #end
-              },
-              "pathParams": {
-                #foreach($param in $input.params().path.keySet())
-                "$param": "$util.escapeJavaScript($input.params().path.get($param))" #if($foreach.hasNext),#end
-                #end
-              },
-              "stageVariables": {
-                #foreach($variable in $context.stageVariables.keySet())
-                "$variable": "$util.escapeJavaScript($context.stageVariables.get($variable))" #if($foreach.hasNext),#end
-                #end
-              },
-              "requestContext": {
-                "accountId": "$context.accountId",
-                "apiId": "$context.apiId",
-                "httpMethod": "$context.httpMethod",
-                "identity": {
-                  "accessKey": "$context.identity.accessKey",
-                  "accountId": "$context.identity.accountId",
-                  "apiKey": "$context.identity.apiKey",
-                  "caller": "$context.identity.caller",
-                  "cognitoAuthenticationProvider": "$context.identity.cognitoAuthenticationProvider",
-                  "cognitoAuthenticationType": "$context.identity.cognitoAuthenticationType",
-                  "cognitoIdentityId": "$context.identity.cognitoIdentityId",
-                  "cognitoIdentityPoolId": "$context.identity.cognitoIdentityPoolId",
-                  "sourceIp": "$context.identity.sourceIp",
-                  "user": "$context.identity.user",
-                  "userAgent": "$context.identity.userAgent",
-                  "userArn": "$context.identity.userArn"
-                },
-                "path": "$context.path",
-                "protocol": "$context.protocol",
-                "requestId": "$context.requestId",
-                "requestTime": "$context.requestTime",
-                "requestTimeEpoch": "$context.requestTimeEpoch",
-                "resourceId": "$context.resourceId",
-                "resourcePath": "$context.resourcePath",
-                "stage": "$context.stage"
-              }
-            }
-        responses:
-          default:
-            statusCode: '200'
-            responseTemplates:
-              application/json: $input.json('$.body')
-
 components:
   schemas:
     Error:
@@ -351,11 +345,6 @@ components:
         - updatedAt
 
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
-      description: API key for authentication
     BearerAuth:
       type: http
       scheme: bearer
@@ -371,7 +360,3 @@ tags:
     description: User management endpoints
   - name: Projects
     description: Project management endpoints
-
-externalDocs:
-  description: Find more info about Prunk Services
-  url: https://github.com/your-org/prunk
