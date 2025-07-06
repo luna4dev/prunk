@@ -18,6 +18,10 @@ user login is only done by email. no password login.
 - The webpage layouts are different between mobile and web view. So we should separate route
 - We will develope mobile view first and then web
 
+## some other context
+- backend url: https://prunk.luna4.me/api
+- the api docs are in '../services/spec.yml' as open api docs
+
 ### mobile view
 - login
 - main layout: a mobile layout consist of top bar, bottom bar(project, search, user)
@@ -57,7 +61,11 @@ user login is only done by email. no password login.
   - Feature-based structure with auth, mobile, web, and shared modules
   - Device detection for mobile vs web routing
   - Protected routes for authenticated pages
-- [ ] Create authentication context/store (Zustand)
+- [x] Create authentication context/store (Zustand)
+  - Zustand store with auth state, actions, and persistence
+  - Custom hooks for easy auth usage
+  - Token storage utilities
+  - Integration with ProtectedRoute and LoginPage
 - [ ] Implement email login flow
 - [ ] Create protected route wrapper
 - [ ] Set up API client for backend communication
