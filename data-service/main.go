@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type HealthResponse struct {
@@ -31,8 +34,17 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Load .env file if it exists (for development)
+	if err := godotenv.Load(); err != nil {
+		log.Printf("No .env file found, using system environment variables")
+	}
+
 	// Define server configuration
-	port := ":8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	port = ":" + port
 
 	// Set up routes
 	http.HandleFunc("/health", healthCheckHandler)
