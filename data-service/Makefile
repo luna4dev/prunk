@@ -1,13 +1,17 @@
 # Target name variable
 TARGET := data-service
 
-.PHONY: build build-prod test clean lint fmt dev
+.PHONY: build build-mac build-linux test clean lint fmt dev
 
-build:
-	GOOS=darwin GOARCH=arm64 go build -o bin/$(TARGET)-darwin ./main.go
+# For Local Use Only
+build-mac:
+	GOOS=darwin GOARCH=arm64 go build -o bin/$(TARGET)-mac ./main.go
 
-build-prod:
-	GOOS=linux GOARCH=amd64 go build -o bin/$(TARGET)-linux ./main.go
+# Default Remote Server Configuration
+build-linux:
+	GOOS=linux GOARCH=amd64 go build -o bin/$(TARGET) ./main.go
+
+build: build-mac build-linux
 
 test:
 	go test ./...
