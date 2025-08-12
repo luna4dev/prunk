@@ -26,4 +26,4 @@ fmt:
 	go fmt ./...
 
 dev: build
-	./bin/$(TARGET)-darwin
+	./bin/$(TARGET)-mac

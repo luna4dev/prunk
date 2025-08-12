@@ -19,15 +19,15 @@ Prunk.io is a cloud-based file sharing platform that allows users to store, orga
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Runtime**: Node.js 20.x with TypeScript
-- **Framework**: AWS Lambda with API Gateway
+- **Runtime**: Go 1.21+ (deployed as binary on EC2)
+- **Framework**: Custom HTTP server (Go)
 - **Database**: DynamoDB
 - **Authentication**: JWT tokens
 - **Email Service**: AWS SES
-- **Build Tool**: esbuild
-- **Validation**: Zod schema validation
+- **Build Tool**: Makefile (Go build)
+- **Validation**: (Go validation libraries)
 
-📖 **[Detailed Backend Documentation →](services/README.md)**
+📖 **[Detailed Backend Documentation →](data-service/README.md)**
 
 ### Frontend
 - **Framework**: React 19 with Vite and SWC
@@ -42,15 +42,12 @@ Prunk.io is a cloud-based file sharing platform that allows users to store, orga
 
 ```
 prunk/
-├── services/          # Backend API services
-│   ├── src/
-│   │   ├── authorizers/    # AWS Lambda authorizers
-│   │   ├── contexts/       # Database contexts
-│   │   ├── controllers/    # API controllers
-│   │   ├── handlers/       # Lambda handlers
-│   │   ├── libs/          # Shared libraries
-│   │   └── models/        # Data models
-│   └── package.json
+├── data-service/      # Backend API service (Go, EC2, SSH deploy)
+│   ├── ...
+│   └── README.md
+├── services/          # (Deprecated) Node.js/TypeScript backend (see data-service)
+│   ├── ...
+│   └── README.md
 ├── views/             # Frontend React application
 │   ├── src/           # React source files
 │   ├── public/        # Static assets
@@ -69,14 +66,13 @@ prunk/
 
 ### Backend Setup
 
-📖 **[Complete Backend Setup Guide →](services/README.md)**
+📖 **[Complete Backend Setup Guide →](data-service/README.md)**
 
 Quick start:
 ```bash
-cd services
-npm install
-aws configure
-npm run deploy
+cd data-service
+make build
+# See README.md for EC2 deployment instructions
 ```
 
 **Required AWS Resources:**
@@ -101,7 +97,7 @@ Then navigate to `http://localhost:5173`
 
 ### Backend Development
 
-📖 **[Complete Backend Development Guide →](services/README.md)**
+📖 **[Complete Backend Development Guide →](data-service/README.md)**
 
 Quick commands:
 - **Local development**: `npm run dev`
@@ -119,7 +115,7 @@ Quick commands:
 
 ## 📚 API Documentation
 
-📖 **[Complete API Documentation →](services/README.md)**
+📖 **[Complete API Documentation →](data-service/README.md)**
 
 ### Key Endpoints
 
@@ -141,14 +137,9 @@ Quick commands:
 
 ### Backend Deployment
 
-📖 **[Complete Backend Deployment Guide →](services/README.md)**
+📖 **[Complete Backend Deployment Guide →](data-service/README.md)**
 
-The backend is deployed using Serverless Framework:
-
-```bash
-cd services
-npm run deploy
-```
+The backend is deployed by building the Go binary and copying it to your EC2 instance via SSH. See the data-service README for details.
 
 ### Frontend Deployment
 

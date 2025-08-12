@@ -47,7 +47,7 @@ func main() {
 	port = ":" + port
 
 	// Set up routes
-	http.HandleFunc("/health", healthCheckHandler)
+	http.HandleFunc("/service-health", healthCheckHandler)
 
 	// Add a simple root endpoint
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func main() {
 
 	// Start the server
 	log.Printf("Starting data service on port %s", port)
-	log.Printf("Health check available at: http://localhost%s/health", port)
+	log.Printf("Health check available at: http://localhost%s/service-health", port)
 
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

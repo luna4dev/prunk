@@ -89,7 +89,51 @@ data-service/
    make fmt
    ```
 
-### Deployment
+## 🚀 Deployment
+
+### Blue-Green Deployment System
+
+This service includes a comprehensive blue-green deployment system that provides zero-downtime deployments with automatic health checks and rollback capabilities.
+
+#### Deployment Scripts Overview
+
+The deployment system consists of several scripts located in the `scripts/` directory:
+
+- **`start-nginx.sh`** - Sets up Nginx reverse proxy and systemd services for blue-green deployment
+- **`push-env.sh`** - Pushes environment variables to the remote server
+- **`push-artifact.sh`** - Pushes the compiled binary to the remote server
+- **`deploy-blue-green.sh`** - Performs blue-green deployment with health checks and traffic switching
+- **`stop-nginx.sh`** - Stops Nginx completely
+- **`reset-nginx.sh`** - Restarts Nginx (useful when environment variables change)
+
+#### How It Works
+
+1. **Two Service Instances**: Blue (port 8080) and Green (port 8081) run simultaneously
+2. **Nginx Load Balancer**: Routes traffic between instances based on deployment state
+3. **Health Checks**: Automatic verification that services are responding before traffic switching
+4. **Zero Downtime**: New deployments are deployed to the inactive instance, then traffic is switched
+5. **Automatic Rollback**: Failed deployments automatically revert to the previous working instance
+
+#### Quick Start
+
+1. **Initial Setup** (run once on your EC2 instance):
+   ```bash
+   ./scripts/start-nginx.sh
+   ```
+
+2. **Deploy Your Service**:
+   ```bash
+   ./scripts/deploy-blue-green.sh
+   ```
+
+3. **Monitor Health**:
+   ```bash
+   ssh user@server 'sudo /opt/prunk/health-check.sh'
+   ```
+
+For detailed documentation on all deployment scripts, see [scripts/README.md](scripts/README.md).
+
+### Manual Deployment
 
 1. **Build the production binary**:
    ```bash
@@ -122,6 +166,10 @@ data-service/
 - `GET /project` - List user projects (requires authentication)
 - `POST /project` - Create new project (requires authentication)
 - `GET /project/{project_id}` - Get project details (requires authentication)
+
+### Health Check
+
+- `GET /health` - Service health check endpoint (required for blue-green deployment)
 
 ## 🔐 Security
 
@@ -209,6 +257,8 @@ JWT_EXPIRATION_TIME=2592000000 # 30 days
 
 - Use CloudWatch or your preferred logging/monitoring solution on EC2.
 - Log output is written to stdout/stderr by default.
+- Health check endpoint `/health` for monitoring service status.
+- Blue-green deployment system provides automatic health monitoring and rollback capabilities.
 
 ## 🤝 Contributing
 

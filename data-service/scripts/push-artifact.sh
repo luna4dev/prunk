@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Load environment variables from .env file
-if [ -f "../.env" ]; then
-    source ../.env
+if [ -f "./.deploy.env" ]; then
+    source ./.deploy.env
 else
-    echo "Error: .env file not found in data-service directory"
+    echo "Error: .deploy.env file not found in scripts directory"
     exit 1
 fi
 
@@ -41,14 +41,16 @@ if [ ! "$(ls -A ../bin)" ]; then
 fi
 
 echo "Connecting to $REMOTE_USER@$REMOTE_HOST..."
-echo "Pushing binary files to $REMOTE_PATH..."
+echo "Pushing $TARGET to $REMOTE_PATH..."
 
 # Push all files from bin directory to remote server
-scp -i $SSH_KEY_PATH ../bin/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH
+scp -i $SSH_KEY_PATH ../bin/$TARGET $REMOTE_USER@$REMOTE_HOST:~$TARGET
+ssh -i $SSH_KEY_PATH $REMOTE_USER@$REMOTE_HOST \
+    "sudo mv ~/$TARGET /opt/prunk/$TARGET/$TARGET"
 
 if [ $? -eq 0 ]; then
-    echo "Successfully pushed binary files to remote server"
+    echo "Successfully pushed $TARGET to remote server"
 else
-    echo "Error: Failed to push binary files"
+    echo "Error: Failed to push $TARGET"
     exit 1
 fi
