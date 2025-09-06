@@ -6,6 +6,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/luna4dev/airlock-client/middleware"
+	"github.com/luna4dev/prunk/internal/handlers"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -46,7 +49,12 @@ func main() {
 
 	// Set up routes
 	r.GET("/health", healthCheckHandler)
-	r.GET("/", rootHandler)
+
+	router := r.Group("/")
+	router.Use(middleware.GinAuthMiddleware())
+	{
+		router.GET("/user", handlers.GetUser)
+	}
 
 	// Start the server
 	log.Printf("Starting data service on port %s", port)
