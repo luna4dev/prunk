@@ -1,155 +1,266 @@
-# Prunk.io
+# Prunk.io Data Service
 
-A modern file sharing service similar to Google Drive, built as a hobby project.
+The backend API service for Prunk.io, rewritten in Go for performance and flexibility. This service provides the same API as the original Node.js/Serverless backend, but is designed to run on EC2 instances and is deployed via SSH.
 
-## 🚀 Overview
+## 🚀 Tech Stack
 
-Prunk.io is a cloud-based file sharing platform that allows users to store, organize, and share files securely. Built with modern web technologies, it provides an intuitive interface for managing your digital assets.
-
-## ✨ Features
-
-- **File Upload & Storage**: Secure cloud storage for your files
-- **File Organization**: Create folders and organize your content
-- **File Sharing**: Share files and folders with others via links
-- **User Authentication**: Secure login and user management
-- **Real-time Collaboration**: Work together on shared files
-- **Cross-platform Access**: Access your files from any device
-- **Version Control**: Track file changes and restore previous versions
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Runtime**: Go 1.21+ (deployed as binary on EC2)
-- **Framework**: Custom HTTP server (Go)
+- **Language**: Go (Golang)
+- **Deployment**: Compiled binary deployed to EC2 via SSH
 - **Database**: DynamoDB
 - **Authentication**: JWT tokens
 - **Email Service**: AWS SES
-- **Build Tool**: Makefile (Go build)
-- **Validation**: (Go validation libraries)
-
-📖 **[Detailed Backend Documentation →](data-service/README.md)**
-
-### Frontend
-- **Framework**: React 19 with Vite and SWC
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS with shadcn/ui components
-- **State Management**: Zustand
-- **Deployment**: Static hosting (Netlify, Vercel, or any static server)
-
-📖 **[Detailed Frontend Documentation →](views/README.md)**
+- **Testing**: Go test
+- **Linting**: golangci-lint
 
 ## 📁 Project Structure
 
 ```
-prunk/
-├── data-service/      # Backend API service (Go, EC2, SSH deploy)
-│   ├── ...
-│   └── README.md
-├── services/          # (Deprecated) Node.js/TypeScript backend (see data-service)
-│   ├── ...
-│   └── README.md
-├── views/             # Frontend React application
-│   ├── src/           # React source files
-│   ├── public/        # Static assets
-│   └── package.json
-└── readme.md
+data-service/
+├── bin/                # Compiled binaries
+├── handlers/           # HTTP handlers
+├── models/             # Data models and database schemas
+├── scripts/            # Utility scripts
+├── main.go             # Application entry point
+├── Makefile            # Build, test, lint, and deployment commands
+└── go.mod              # Go module definition
 ```
 
-## 🚀 Getting Started
+## 🛠️ Development
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
+- Go 1.21+
 - AWS CLI configured
 - AWS account with appropriate permissions
+- golangci-lint (for linting)
+- SSH access to your EC2 deployment target
 
-### Backend Setup
+### Getting Started
 
-📖 **[Complete Backend Setup Guide →](data-service/README.md)**
+1. **Install dependencies** (Go modules):
+   ```bash
+   go mod tidy
+   ```
 
-Quick start:
-```bash
-cd data-service
-make build
-# See README.md for EC2 deployment instructions
-```
+2. **Configure AWS credentials**:
+   ```bash
+   aws configure
+   ```
 
-**Required AWS Resources:**
-- DynamoDB tables with names starting with `Prunk`
-- SES configuration for email sending
-- IAM roles with DynamoDB and SES permissions
+3. **Set up environment variables**:
+   
+   The service expects environment variables for AWS, JWT, and SES configuration. You can use a `.env` file or set them in your EC2 environment. Example variables:
+   
+   - `AWS_REGION`: AWS region
+   - `DYNAMODB_TABLE_USERS`: DynamoDB users table name
+   - `DYNAMODB_TABLE_PROJECTS`: DynamoDB projects table name
+   - `DYNAMODB_TABLE_AUTHORIZATIONS`: DynamoDB authorizations table name
+   - `EMAIL_AUTH_SENDER`: SES verified sender email
+   - `JWT_SECRET`: Secret key for JWT signing
+   - `JWT_ISSUER`: JWT issuer
+   - `JWT_AUDIENCE`: JWT audience
+   - `SERVICE_DOMAIN`: Your domain name
 
-### Frontend Setup
+4. **Set up AWS resources**:
+   - **DynamoDB Tables**: Create tables with names starting with `Prunk` (e.g., `PrunkProjects`, `PrunkUsers`)
+   - **SES Configuration**: Verify your email domain and set up SES for sending emails
+   - **IAM Permissions**: Ensure your AWS credentials have the necessary permissions
 
-📖 **[Complete Frontend Setup Guide →](views/README.md)**
+5. **Build the service**:
+   - For local development (macOS/arm64):
+     ```bash
+     make build
+     ```
+   - For production (Linux/amd64, for EC2):
+     ```bash
+     make build-prod
+     ```
+   - Binaries are output to the `bin/` directory.
 
-Quick start:
-```bash
-cd views
-npm install
-npm run dev
-```
+6. **Run locally**:
+   ```bash
+   make dev
+   ```
 
-Then navigate to `http://localhost:5173`
-
-## 🔧 Development
-
-### Backend Development
-
-📖 **[Complete Backend Development Guide →](data-service/README.md)**
-
-Quick commands:
-- **Local development**: `npm run dev`
-- **Deploy**: `npm run deploy`
-- **Format code**: `npm run format`
-
-### Frontend Development
-
-📖 **[Complete Frontend Development Guide →](views/README.md)**
-
-Quick commands:
-- **Development server**: `npm run dev`
-- **Build**: `npm run build`
-- **Preview**: `npm run preview`
-
-## 📚 API Documentation
-
-📖 **[Complete API Documentation →](data-service/README.md)**
-
-### Key Endpoints
-
-- `POST /auth/email` - Request email authentication
-- `GET /auth/email/verify` - Verify email authentication
-- `GET /project` - List user projects
-- `POST /project` - Create new project
-- `GET /project/{project_id}` - Get project details
-
-## 🔐 Security
-
-- JWT-based authentication
-- AWS IAM roles and policies
-- Encrypted data transmission
-- Secure file storage with S3
-- Input validation and sanitization
+7. **Test and lint**:
+   ```bash
+   make test
+   make lint
+   make fmt
+   ```
 
 ## 🚀 Deployment
 
-### Backend Deployment
+### Blue-Green Deployment System
 
-📖 **[Complete Backend Deployment Guide →](data-service/README.md)**
+This service includes a comprehensive blue-green deployment system that provides zero-downtime deployments with automatic health checks and rollback capabilities.
 
-The backend is deployed by building the Go binary and copying it to your EC2 instance via SSH. See the data-service README for details.
+#### Deployment Scripts Overview
 
-### Frontend Deployment
+The deployment system consists of several scripts located in the `scripts/` directory:
 
-📖 **[Complete Frontend Deployment Guide →](views/README.md)**
+- **`start-nginx.sh`** - Sets up Nginx reverse proxy and systemd services for blue-green deployment
+- **`push-env.sh`** - Pushes environment variables to the remote server
+- **`push-artifact.sh`** - Pushes the compiled binary to the remote server
+- **`deploy-blue-green.sh`** - Performs blue-green deployment with health checks and traffic switching
+- **`stop-nginx.sh`** - Stops Nginx completely
+- **`reset-nginx.sh`** - Restarts Nginx (useful when environment variables change)
 
-The frontend can be deployed to any static hosting service (Netlify, Vercel, GitHub Pages, etc.) after running `npm run build`.
+#### How It Works
+
+1. **Two Service Instances**: Blue (port 8080) and Green (port 8081) run simultaneously
+2. **Nginx Load Balancer**: Routes traffic between instances based on deployment state
+3. **Health Checks**: Automatic verification that services are responding before traffic switching
+4. **Zero Downtime**: New deployments are deployed to the inactive instance, then traffic is switched
+5. **Automatic Rollback**: Failed deployments automatically revert to the previous working instance
+
+#### Quick Start
+
+1. **Initial Setup** (run once on your EC2 instance):
+   ```bash
+   ./scripts/start-nginx.sh
+   ```
+
+2. **Deploy Your Service**:
+   ```bash
+   ./scripts/deploy-blue-green.sh
+   ```
+
+3. **Monitor Health**:
+   ```bash
+   ssh user@server 'sudo /opt/prunk/health-check.sh'
+   ```
+
+For detailed documentation on all deployment scripts, see [scripts/README.md](scripts/README.md).
+
+### Manual Deployment
+
+1. **Build the production binary**:
+   ```bash
+   make build-prod
+   ```
+   This creates `bin/data-service-linux`.
+
+2. **Copy the binary to your EC2 instance via SSH**:
+   ```bash
+   scp -i <your-ec2-key.pem> bin/data-service-linux ec2-user@<ec2-ip>:/home/ec2-user/data-service
+   ```
+
+3. **SSH into your EC2 instance and run the service**:
+   ```bash
+   ssh -i <your-ec2-key.pem> ec2-user@<ec2-ip>
+   chmod +x /home/ec2-user/data-service
+   ./data-service
+   ```
+   Ensure your environment variables are set on the EC2 instance (via `.env` or systemd service, etc).
+
+## 📚 API Endpoints
+
+### Authentication
+
+- `POST /auth/email` - Request email authentication
+- `GET /auth/email/verify` - Verify email authentication
+
+### Projects
+
+- `GET /project` - List user projects (requires authentication)
+- `POST /project` - Create new project (requires authentication)
+- `GET /project/{project_id}` - Get project details (requires authentication)
+
+### Health Check
+
+- `GET /health` - Service health check endpoint (required for blue-green deployment)
+
+## 🔐 Security
+
+### Authentication Flow
+
+1. **Email Authentication**:
+   - User requests authentication via email
+   - System sends verification link to user's email
+   - User clicks link to verify and receive JWT token
+   - Token is used for subsequent API calls
+
+2. **JWT Token Authorization**:
+   - All protected endpoints require valid JWT token
+   - Token is validated by the service
+   - Token contains user information and permissions
+
+### Security Features
+
+- JWT-based authentication with configurable expiration
+- AWS IAM roles and policies for resource access
+- Encrypted data transmission via HTTPS (when behind a reverse proxy)
+- Input validation
+- Rate limiting and debouncing for email requests
+
+## 🗄️ Database Schema
+
+### DynamoDB Tables
+
+#### PrunkUsers
+- `id` (String, Partition Key) - User unique identifier
+- `email` (String) - User email address
+- `created_at` (String) - User creation timestamp
+- `updated_at` (String) - Last update timestamp
+
+#### PrunkProjects
+- `id` (String, Partition Key) - Project unique identifier
+- `user_id` (String, GSI Partition Key) - Owner user ID
+- `name` (String) - Project name
+- `description` (String) - Project description
+- `created_at` (String) - Project creation timestamp
+- `updated_at` (String) - Last update timestamp
+
+#### PrunkAuthorizations
+- `id` (String, Partition Key) - Authorization unique identifier
+- `email` (String) - User email
+- `token` (String) - Verification token
+- `expires_at` (String) - Token expiration timestamp
+- `created_at` (String) - Authorization creation timestamp
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Set these in your EC2 environment or via a `.env` file:
+
+```
+EMAIL_AUTH_SENDER=noreply-prunk@luna4.me
+EMAIL_AUTH_DEBOUNCE_TIME=180000 # 3 minutes
+EMAIL_AUTH_TOKEN_EXPIRATION_TIME=1800000 # 30 minutes
+JWT_SECRET=your-secret-key
+JWT_ISSUER=prunk.luna4.me
+JWT_AUDIENCE=prunk.luna4.me
+JWT_EXPIRATION_TIME=2592000000 # 30 days
+```
+
+## 🚀 Deployment
+
+### AWS Resources Required
+
+1. **DynamoDB Tables**:
+   - `PrunkUsers` - User data storage
+   - `PrunkProjects` - Project data storage
+   - `PrunkAuthorizations` - Email verification tokens
+
+2. **SES Configuration**:
+   - Verified email domain
+   - Email sending permissions
+
+3. **IAM Roles**:
+   - DynamoDB read/write permissions
+   - SES send email permissions
+   - EC2 instance permissions as needed
+
+## 📊 Monitoring
+
+- Use CloudWatch or your preferred logging/monitoring solution on EC2.
+- Log output is written to stdout/stderr by default.
+- Health check endpoint `/health` for monitoring service status.
+- Blue-green deployment system provides automatic health monitoring and rollback capabilities.
 
 ## 🤝 Contributing
-
-This is a hobby project, but contributions are welcome! Here's how you can help:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -159,19 +270,13 @@ This is a hobby project, but contributions are welcome! Here's how you can help:
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🔗 Related
 
-- Built with React and AWS Lambda
-- Inspired by Google Drive and Dropbox
-- Icons from [Heroicons](https://heroicons.com/)
-
-## 📞 Contact
-
-- **Project Link**: [https://github.com/yourusername/prunk](https://github.com/yourusername/prunk)
-- **Live Demo**: [https://prunk.io](https://prunk.io)
+- **Frontend**: [views/](../views/) - React frontend application
+- **Main Project**: [readme.md](../readme.md) - Complete project overview
 
 ---
 
-⭐ If you find this project helpful, please give it a star!
+⭐ If you find this project helpful, please give it a star! 
