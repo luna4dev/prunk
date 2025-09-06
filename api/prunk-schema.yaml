@@ -1,5 +1,5 @@
 components:
-  schemas:
+  schema:
     User:
       type: object
       properties:
@@ -113,7 +113,7 @@ components:
           type: array
           description: List of projects the user owns or participates in
           items:
-            $ref: '#/components/schemas/Project'
+            $ref: '#/components/schema/Project'
         pagination:
           type: object
           description: Pagination information
@@ -142,7 +142,7 @@ components:
       type: object
       properties:
         project:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schema/Project'
         folders:
           type: array
           description: Nested folder structure as array of folder paths
@@ -189,7 +189,7 @@ components:
           type: array
           description: List of users matching the search criteria
           items:
-            $ref: '#/components/schemas/UserSearchResult'
+            $ref: '#/components/schema/UserSearchResult'
         pagination:
           type: object
           description: Pagination information
@@ -246,9 +246,3 @@ components:
       required:
         - error
         - message
-
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT

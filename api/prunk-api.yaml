@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.1
 info:
   title: Prunk Service API
   description: Backend API service for Prunk.io - Go HTTP API replacing Node.js/Serverless backend
@@ -11,20 +11,16 @@ servers:
   - url: http://localhost:8010
     description: Development server
 
-paths:
-  /health:
-    get:
-      summary: Health check endpoint
-      description: Returns the health status of the service
-      operationId: healthCheck
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
+security: []
+
+paths:
   /:
     get:
       summary: Root endpoint
@@ -38,6 +34,19 @@ paths:
               schema:
                 type: string
                 example: "Data Service is running!"
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: './prunk-schema.yaml#/components/schema/HealthResponse'
 
   /user:
     get:
@@ -54,19 +63,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: './prunk-schema.yaml#/components/schema/User'
         '401':
           description: Unauthorized - Invalid or missing token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
 
   /user/search:
     get:
@@ -108,25 +117,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserSearchResponse'
+                $ref: './prunk-schema.yaml#/components/schema/UserSearchResponse'
         '400':
           description: Bad request - Invalid parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '401':
           description: Unauthorized - Invalid or missing token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
 
   /project:
     get:
@@ -161,19 +170,59 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectListResponse'
+                $ref: './prunk-schema.yaml#/components/schema/ProjectListResponse'
         '401':
           description: Unauthorized - Invalid or missing token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
+
+    post:
+      tags:
+        - Project
+      summary: Create new project
+      description: Creates a new project for the authenticated user
+      operationId: createProject
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './prunk-schema.yaml#/components/schema/CreateProjectRequest'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: './prunk-schema.yaml#/components/schema/Project'
+        '400':
+          description: Bad request - Invalid project data
+          content:
+            application/json:
+              schema:
+                $ref: './prunk-schema.yaml#/components/schema/Error'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: './prunk-schema.yaml#/components/schema/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: './prunk-schema.yaml#/components/schema/Error'
 
   /project/{project_id}:
     get:
@@ -198,76 +247,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectDetailsResponse'
+                $ref: './prunk-schema.yaml#/components/schema/ProjectDetailsResponse'
         '401':
           description: Unauthorized - Invalid or missing token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '403':
           description: Forbidden - User does not have access to this project
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '404':
           description: Project not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: './prunk-schema.yaml#/components/schema/Error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
-    post:
-      tags:
-        - Project
-      summary: Create new project
-      description: Creates a new project for the authenticated user
-      operationId: createProject
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateProjectRequest'
-      responses:
-        '201':
-          description: Project created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Project'
-        '400':
-          description: Bad request - Invalid project data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-components:
-  schemas:
-    $ref: './schemas.yaml#/components/schemas'
-  securitySchemes:
-    $ref: './schemas.yaml#/components/securitySchemes'
-
-security: []
+                $ref: './prunk-schema.yaml#/components/schema/Error'
