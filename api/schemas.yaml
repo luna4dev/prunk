@@ -1,0 +1,254 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: The unique identifier of the user
+          example: "user_123456789"
+        email:
+          type: string
+          format: email
+          description: The email of the user
+          example: "user@example.com"
+        status:
+          type: string
+          enum: ["ACTIVE", "SUSPENDED"]
+          description: The status of the user
+          example: "ACTIVE"
+        preferences:
+          type: object
+          additionalProperties: true
+          description: User preferences (nullable)
+          nullable: true
+          example: {"theme": "dark", "notifications": true}
+        createdAt:
+          type: integer
+          format: int64
+          description: The timestamp (milliseconds) of when the user was created
+          example: 1693987200000
+        updatedAt:
+          type: integer
+          format: int64
+          description: The timestamp (milliseconds) of when the user was last updated
+          example: 1693987200000
+        lastLoginAt:
+          type: integer
+          format: int64
+          description: The timestamp (milliseconds) of when the user was last logged in (nullable)
+          nullable: true
+          example: 1693987200000
+      required:
+        - userId
+        - email
+        - status
+        - createdAt
+        - updatedAt
+
+    UserSearchResult:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: The unique identifier of the user
+          example: "user_123456789"
+        email:
+          type: string
+          format: email
+          description: The email of the user
+          example: "user@example.com"
+      required:
+        - userId
+        - email
+
+    Project:
+      type: object
+      properties:
+        projectId:
+          type: string
+          description: The unique identifier of the project
+          example: "project_123456789"
+        name:
+          type: string
+          description: The name of the project
+          example: "My Awesome Project"
+        description:
+          type: string
+          description: The description of the project
+          example: "A project for managing tasks and workflows"
+        status:
+          type: string
+          enum: ["ACTIVE", "SUSPENDED"]
+          description: The status of the project
+          example: "ACTIVE"
+        preferences:
+          type: object
+          additionalProperties: true
+          description: Project preferences
+          example: {"theme": "light", "notifications": false}
+        createdAt:
+          type: integer
+          format: int64
+          description: The timestamp (milliseconds) of when the project was created
+          example: 1693987200000
+        updatedAt:
+          type: integer
+          format: int64
+          description: The timestamp (milliseconds) of when the project was last updated
+          example: 1693987200000
+      required:
+        - projectId
+        - name
+        - description
+        - status
+        - preferences
+        - createdAt
+        - updatedAt
+
+    ProjectListResponse:
+      type: object
+      properties:
+        projects:
+          type: array
+          description: List of projects the user owns or participates in
+          items:
+            $ref: '#/components/schemas/Project'
+        pagination:
+          type: object
+          description: Pagination information
+          properties:
+            page_size:
+              type: integer
+              description: Number of results requested
+              example: 10
+            next_page_key:
+              type: string
+              description: Key for the next page (null if no more results)
+              nullable: true
+              example: "project_987654321"
+            has_more:
+              type: boolean
+              description: Whether there are more results available
+              example: true
+          required:
+            - page_size
+            - has_more
+      required:
+        - projects
+        - pagination
+
+    ProjectDetailsResponse:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+        folders:
+          type: array
+          description: Nested folder structure as array of folder paths
+          items:
+            type: string
+          example:
+            - "src"
+            - "src/components"
+            - "src/components/ui"
+            - "src/utils"
+            - "docs"
+            - "docs/api"
+      required:
+        - project
+        - folders
+
+    CreateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the project
+          example: "My New Project"
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          description: The description of the project
+          example: "A project for managing tasks and workflows"
+          maxLength: 1000
+        preferences:
+          type: object
+          additionalProperties: true
+          description: Initial project preferences (optional)
+          example: {"theme": "light", "notifications": false}
+      required:
+        - name
+        - description
+
+    UserSearchResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          description: List of users matching the search criteria
+          items:
+            $ref: '#/components/schemas/UserSearchResult'
+        pagination:
+          type: object
+          description: Pagination information
+          properties:
+            page_size:
+              type: integer
+              description: Number of results requested
+              example: 10
+            next_page_key:
+              type: string
+              description: Key for the next page (null if no more results)
+              nullable: true
+              example: "user_987654321"
+            has_more:
+              type: boolean
+              description: Whether there are more results available
+              example: true
+          required:
+            - page_size
+            - has_more
+      required:
+        - users
+        - pagination
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-06T12:56:17Z"
+        service:
+          type: string
+          example: "prunk"
+      required:
+        - status
+        - timestamp
+        - service
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Unauthorized"
+        message:
+          type: string
+          description: Detailed error description
+          example: "Invalid or expired token"
+      required:
+        - error
+        - message
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

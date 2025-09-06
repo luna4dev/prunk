@@ -8,13 +8,6 @@ const (
 	UserStatusSuspended UserStatus = "SUSPENDED"
 )
 
-// EmailAuth represents the email authentication state for a user.
-type EmailAuth struct {
-	Token     string `json:"token"`
-	SentAt    int64  `json:"sentAt"`
-	Completed bool   `json:"completed"`
-}
-
 // User represents a user in the system.
 type User struct {
 	UserID      string                 `json:"userId"`      // The unique identifier of the user. Partition key
@@ -24,5 +17,4 @@ type User struct {
 	CreatedAt   int64                  `json:"createdAt"`   // The timestamp (milliseconds) of when the user was created
 	UpdatedAt   int64                  `json:"updatedAt"`   // The timestamp (milliseconds) of when the user was last updated
 	LastLoginAt *int64                 `json:"lastLoginAt"` // The timestamp (milliseconds) of when the user was last logged in (nullable)
-	EmailAuth   *EmailAuth             `json:"emailAuth"`   // The email authentication of the user (nullable)
 }
