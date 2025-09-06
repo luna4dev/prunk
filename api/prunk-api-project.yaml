@@ -1,0 +1,85 @@
+get:
+  tags:
+    - Project
+  summary: List user projects
+  description: Returns projects that the authenticated user owns or participates in
+  operationId: listProjects
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: page_size
+      in: query
+      required: false
+      description: Number of results to return per page (default 10, max 50)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 10
+        example: 10
+    - name: page_key
+      in: query
+      required: false
+      description: Last key from previous page for cursor-based pagination
+      schema:
+        type: string
+        example: "project_123456789"
+  responses:
+    '200':
+      description: List of user projects with pagination
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/ProjectListResponse'
+    '401':
+      description: Unauthorized - Invalid or missing token
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+
+post:
+  tags:
+    - Project
+  summary: Create new project
+  description: Creates a new project for the authenticated user
+  operationId: createProject
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: './prunk-schema.yaml#/components/schema/CreateProjectRequest'
+  responses:
+    '201':
+      description: Project created successfully
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Project'
+    '400':
+      description: Bad request - Invalid project data
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+    '401':
+      description: Unauthorized - Invalid or missing token
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'

@@ -1,0 +1,150 @@
+get:
+  tags:
+    - Project
+  summary: Get project details with folder structure
+  description: Returns project details and nested folder structure for the authenticated user
+  operationId: getProject
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: project_id
+      in: path
+      required: true
+      description: The unique identifier of the project
+      schema:
+        type: string
+        example: "project_123456789"
+  responses:
+    '200':
+      description: Project details with folder structure
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/ProjectDetailsResponse'
+    '401':
+      description: Unauthorized - Invalid or missing token
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+    '403':
+      description: Forbidden - User does not have access to this project
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+    '404':
+      description: Project not found
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+put:                                                                   
+  tags:                                                                
+    - Project                                                          
+  summary: Update project                                              
+  description: Updates an existing project for the authenticated user                                                                       
+  operationId: updateProject                                           
+  security:                                                            
+    - BearerAuth: []                                                   
+  parameters:                                                          
+    - name: project_id                                                 
+      in: path                                                         
+      required: true                                                   
+      description: The unique identifier of the project                
+      schema:                                                          
+        type: string                                                   
+        example: \"project_123456789\"                                 
+  requestBody:                                                         
+    required: true                                                     
+    content:                                                           
+      application/json:                                                
+        schema:                                                        
+          $ref: './prunk-schema.yaml#/components/schema/UpdateProjectRequest'              
+  responses:                                                           
+    '200':                                                             
+      description: Project updated successfully                        
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Project'    
+    '400':
+      description: Bad request - Invalid project data
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '401':                                                             
+      description: Unauthorized - Invalid or missing token             
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '403':                                                             
+      description: Forbidden - User does not have access to this project                                                                    
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '404':                                                             
+      description: Project not found                                   
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '500':                                                             
+      description: Internal server error                               
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'
+
+delete:                                                                
+  tags:                                                                
+    - Project                                                          
+  summary: Delete project                                              
+  description: Permanently deletes a project for the authenticated user (hard delete)                                                         
+  operationId: deleteProject                                           
+  security:                                                            
+    - BearerAuth: []                                                   
+  parameters:                                                          
+    - name: project_id                                                 
+      in: path                                                         
+      required: true                                                   
+      description: The unique identifier of the project                
+      schema:                                                          
+        type: string                                                   
+        example: \"project_123456789\"                                 
+  responses:                                                           
+    '204':                                                             
+      description: Project deleted successfully                        
+    '401':                                                             
+      description: Unauthorized - Invalid or missing token             
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '403':                                                             
+      description: Forbidden - User does not have access to this project                                                                    
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '404':                                                             
+      description: Project not found                                   
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'      
+    '500':                                                             
+      description: Internal server error                               
+      content:                                                         
+        application/json:                                              
+          schema:                                                      
+            $ref: './prunk-schema.yaml#/components/schema/Error'

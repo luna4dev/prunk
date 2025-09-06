@@ -1,36 +1,19 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8">
-    <title>Luna4 Prunk Service API Docs</title>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.28.1/swagger-ui.css">
-</head>
-<body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Luna4 Prunk Service API</title>
+  
+    <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+  </head>
+  <body>
 
-<div id="swagger-ui"></div>
+    <elements-api
+      apiDescriptionUrl="./prunk-api.yaml"
+      router="hash"
+    />
 
-<script src="https://unpkg.com/swagger-ui-dist@5.28.1/swagger-ui-standalone-preset.js"></script>
-<script src="https://unpkg.com/swagger-ui-dist@5.28.1/swagger-ui-bundle.js"></script>
-
-<script>
-
-    window.onload = function() {
-        // Build a system
-        const ui = SwaggerUIBundle({
-            url: "./prunk-api.yaml",
-            dom_id: '#swagger-ui',
-            deepLinking: true,
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIStandalonePreset
-            ],
-            plugins: [
-                SwaggerUIBundle.plugins.DownloadUrl
-            ],
-            layout: "StandaloneLayout",
-        })
-        window.ui = ui
-    }
-</script>
-</body>
+  </body>
 </html>
