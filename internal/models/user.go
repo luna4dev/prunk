@@ -10,7 +10,7 @@ const (
 
 // User represents a user in the system.
 type User struct {
-	UserID      string                 `json:"userId"`      // The unique identifier of the user. Partition key
+	ID          string                 `json:"id"`          // The unique identifier of the user. Partition key
 	Email       string                 `json:"email"`       // The email of the user, GSI partition key of email-index
 	Status      UserStatus             `json:"status"`      // The status of the user
 	Preferences map[string]interface{} `json:"preferences"` // The preferences of the user (nullable)

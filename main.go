@@ -28,10 +28,6 @@ func healthCheckHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func rootHandler(c *gin.Context) {
-	c.String(http.StatusOK, "Data Service is running!")
-}
-
 func main() {
 	// Load .env file if it exists (for development)
 	if err := godotenv.Load(); err != nil {
