@@ -52,3 +52,59 @@ func (u *UserService) GetUser(ctx context.Context, id string) (*models.User, err
 
 	return &user, nil
 }
+
+type SearchUsersResponse struct {
+	Users    []models.User `json:"users"`
+	NextKey  *string       `json:"next_key"`
+	HasMore  bool          `json:"has_more"`
+	PageSize int           `json:"page_size"`
+}
+
+func (u *UserService) SearchUsers(ctx context.Context, keyword string, pageSize int, pageKey *string) (*SearchUsersResponse, error) {
+	input := &dynamodb.ScanInput{
+		TableName:        aws.String(u.dynamoDBService.tableName),
+		FilterExpression: aws.String("contains(email, :keyword)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":keyword": &types.AttributeValueMemberS{Value: keyword},
+		},
+		Limit: aws.Int32(int32(pageSize)),
+	}
+
+	if pageKey != nil {
+		exclusiveStartKey := map[string]types.AttributeValue{
+			"id": &types.AttributeValueMemberS{Value: *pageKey},
+		}
+		input.ExclusiveStartKey = exclusiveStartKey
+	}
+
+	result, err := u.dynamoDBService.client.Scan(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []models.User
+	for _, item := range result.Items {
+		var user models.User
+		err = attributevalue.UnmarshalMap(item, &user)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	response := &SearchUsersResponse{
+		Users:    users,
+		PageSize: pageSize,
+		HasMore:  result.LastEvaluatedKey != nil,
+	}
+
+	if result.LastEvaluatedKey != nil {
+		if idValue, exists := result.LastEvaluatedKey["id"]; exists {
+			if s, ok := idValue.(*types.AttributeValueMemberS); ok {
+				response.NextKey = &s.Value
+			}
+		}
+	}
+
+	return response, nil
+}

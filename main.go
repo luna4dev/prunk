@@ -50,6 +50,7 @@ func main() {
 	router.Use(middleware.GinAuthMiddleware())
 	{
 		router.GET("/user", handlers.GetUser)
+		router.GET("/user/search", handlers.SearchUsers)
 	}
 
 	// Start the server
